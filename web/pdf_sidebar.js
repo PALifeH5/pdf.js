@@ -261,6 +261,7 @@ var PDFSidebar = (function PDFSidebarClosure() {
     },
 
     toggle: function PDFSidebar_toggle() {
+      if (!window.thumbScroll) return; // disabled toggle before done loading in case sidebar iscroll bug
       if (this.isOpen) {
         this.close();
       } else {

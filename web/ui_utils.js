@@ -117,7 +117,16 @@ function getOutputScale(ctx) {
  * @param {boolean} skipOverflowHiddenElements - Ignore elements that have
  *   the CSS rule `overflow: hidden;` set. The default is false.
  */
-function scrollIntoView(element, spot, skipOverflowHiddenElements) {
+function scrollIntoView(element, spot, skipOverflowHiddenElements, fromThumbnail) {
+  if (window.myScroll && !fromThumbnail) {
+    window.myScroll.scrollToElement(element, 0);
+    window.PDFViewerApplication.pdfViewer.update();
+    return
+  }
+  if (window.thumbScroll && fromThumbnail) {
+    window.thumbScroll.scrollToElement(element, 0);
+    return
+  }
   // Assuming offsetParent is available (it's not available when viewer is in
   // hidden iframe or object). We have to scroll: if the offsetParent is not set
   // producing the error. See also animationStartedClosure.
@@ -287,8 +296,18 @@ function roundToDivide(x, div) {
 /**
  * Generic helper to find out what elements are visible within a scroll pane.
  */
-function getVisibleElements(scrollEl, views, sortByVisibility) {
-  var top = scrollEl.scrollTop, bottom = top + scrollEl.clientHeight;
+function getVisibleElements(scrollEl, views, sortByVisibility, fromThumbnail) {
+  var top, bottom;
+  if (window.myScroll && !fromThumbnail) {
+    top = -window.myScroll.y;
+  }
+  else if (window.thumbScroll && fromThumbnail) {
+    top = -window.thumbScroll.y;
+  }
+  else {
+    top = scrollEl.scrollTop;
+  }
+  bottom = top + scrollEl.clientHeight;
   var left = scrollEl.scrollLeft, right = left + scrollEl.clientWidth;
 
   function isElementBottomBelowViewTop(view) {

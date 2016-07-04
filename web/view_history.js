@@ -55,6 +55,7 @@ var ViewHistory = (function ViewHistoryClosure() {
       var index;
       for (var i = 0, length = database.files.length; i < length; i++) {
         var branch = database.files[i];
+        branch.sidebarView = 0; // in case sidebar iscroll bug
         if (branch.fingerprint === this.fingerprint) {
           index = i;
           break;

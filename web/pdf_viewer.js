@@ -133,7 +133,8 @@ var PDFViewer = (function pdfViewer() {
       this.renderingQueue = options.renderingQueue;
     }
 
-    this.scroll = watchScroll(this.container, this._scrollUpdate.bind(this));
+    //this.scroll = watchScroll(this.container, this._scrollUpdate.bind(this));
+    this.scroll = {down: false};
     this.updateInProgress = false;
     this.presentationModeState = PresentationModeState.UNKNOWN;
     this._resetView();
@@ -440,6 +441,7 @@ var PDFViewer = (function pdfViewer() {
       if (this.defaultRenderingQueue) {
         this.update();
       }
+      window.PDFViewerApplication.updateScroll();
     },
 
     _setScale: function pdfViewer_setScale(value, noScroll) {

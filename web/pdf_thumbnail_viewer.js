@@ -58,7 +58,8 @@ var PDFThumbnailViewer = (function PDFThumbnailViewerClosure() {
     this.renderingQueue = options.renderingQueue;
     this.linkService = options.linkService;
 
-    this.scroll = watchScroll(this.container, this._scrollUpdated.bind(this));
+    //this.scroll = watchScroll(this.container, this._scrollUpdated.bind(this));
+    this.scroll = {down: false};
     this._resetView();
   }
 
@@ -78,7 +79,7 @@ var PDFThumbnailViewer = (function PDFThumbnailViewerClosure() {
      * @private
      */
     _getVisibleThumbs: function PDFThumbnailViewer_getVisibleThumbs() {
-      return getVisibleElements(this.container, this.thumbnails);
+      return getVisibleElements(this.container.parentNode, this.thumbnails, false, true);
     },
 
     scrollThumbnailIntoView:
@@ -100,7 +101,7 @@ var PDFThumbnailViewer = (function PDFThumbnailViewerClosure() {
         // Account for only one thumbnail being visible.
         var last = (numVisibleThumbs > 1 ? visibleThumbs.last.id : first);
         if (page <= first || page >= last) {
-          scrollIntoView(thumbnail, { top: THUMBNAIL_SCROLL_MARGIN });
+          scrollIntoView(thumbnail, { top: THUMBNAIL_SCROLL_MARGIN }, false, true);
         }
       }
     },

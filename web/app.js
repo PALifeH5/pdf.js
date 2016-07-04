@@ -29,7 +29,7 @@
       'pdfjs-web/pdf_outline_viewer', 'pdfjs-web/overlay_manager',
       'pdfjs-web/pdf_attachment_viewer', 'pdfjs-web/pdf_find_controller',
       'pdfjs-web/pdf_find_bar', 'pdfjs-web/mozPrintCallback_polyfill',
-      'pdfjs-web/pdfjs'],
+      'pdfjs-web/pdfjs', 'pdfjs-web/iscroll-probe'],
       factory);
   } else if (typeof exports !== 'undefined') {
     factory(exports, require('./ui_utils.js'), require('./firefoxcom.js'),
@@ -43,7 +43,7 @@
       require('./pdf_link_service.js'), require('./pdf_outline_viewer.js'),
       require('./overlay_manager.js'), require('./pdf_attachment_viewer.js'),
       require('./pdf_find_controller.js'), require('./pdf_find_bar.js'),
-      require('./mozPrintCallback_polyfill.js'), require('./pdfjs.js'));
+      require('./mozPrintCallback_polyfill.js'), require('./pdfjs.js'), require('./iscroll-probe.js'));
   } else {
     factory((root.pdfjsWebApp = {}), root.pdfjsWebUIUtils,
       root.pdfjsWebFirefoxCom, root.pdfjsWebDownloadManager,
@@ -56,7 +56,7 @@
       root.pdfjsWebPDFLinkService, root.pdfjsWebPDFOutlineViewer,
       root.pdfjsWebOverlayManager, root.pdfjsWebPDFAttachmentViewer,
       root.pdfjsWebPDFFindController, root.pdfjsWebPDFFindBar,
-      root.pdfjsWebMozPrintCallbackPolyfill, root.pdfjsWebPDFJS);
+      root.pdfjsWebMozPrintCallbackPolyfill, root.pdfjsWebPDFJS, root.iscrollLib);
   }
 }(this, function (exports, uiUtilsLib, firefoxComLib, downloadManagerLib,
                   pdfHistoryLib, preferencesLib, pdfSidebarLib, viewHistoryLib,
@@ -65,7 +65,7 @@
                   pdfViewerLib, pdfRenderingQueueLib, pdfLinkServiceLib,
                   pdfOutlineViewerLib, overlayManagerLib,
                   pdfAttachmentViewerLib, pdfFindControllerLib, pdfFindBarLib,
-                  mozPrintCallbackPolyfillLib, pdfjsLib) {
+                  mozPrintCallbackPolyfillLib, pdfjsLib, iscrollLib) {
 
 var FirefoxCom = firefoxComLib.FirefoxCom;
 var UNKNOWN_SCALE = uiUtilsLib.UNKNOWN_SCALE;
@@ -839,6 +839,38 @@ var PDFViewerApplication = {
     }
   },
 
+  updateScroll: function() {
+    var self = this;
+    //console.log('update scroll');
+    if (window.myScroll) {
+      window.myScroll.refresh();
+      return;
+    }
+    var myScroll = new iscrollLib.IScroll(self.appConfig.mainContainer, {
+      mouseWheel: true,
+      probeType: 3,
+      preventDefaultException: { tagName:/.*/ }, // fix presentation mode bug
+    });
+    myScroll.on('scroll', self.pdfViewer._scrollUpdate.bind(self.pdfViewer))
+    window.myScroll = myScroll;
+  },
+
+  updateThumbScroll: function() {
+    var self = this;
+    //console.log('update thumb scroll');
+    if (window.thumbScroll) {
+      window.thumbScroll.refresh();
+      return;
+    }
+    var thumbScroll = new iscrollLib.IScroll('#sidebarContent', {
+      mouseWheel: true,
+      probeType: 3,
+      preventDefaultException: { tagName:/.*/ }, // fix presentation mode bug
+    });
+    thumbScroll.on('scroll', self.pdfThumbnailViewer._scrollUpdated.bind(self.pdfThumbnailViewer))
+    window.thumbScroll = thumbScroll;
+  },
+
   load: function pdfViewLoad(pdfDocument, scale) {
     var self = this;
     scale = scale || UNKNOWN_SCALE;
@@ -850,6 +882,19 @@ var PDFViewerApplication = {
     var downloadedPromise = pdfDocument.getDownloadInfo().then(function() {
       self.downloadComplete = true;
       self.loadingBar.hide();
+
+      self.updateScroll();
+      self.updateThumbScroll();
+      // since the viewer's size and the thumbnailView's size changes for unknown reason,
+      // here just refresh iscroll regularly
+      if (!window.scrollInterval) {
+        window.scrollInterval = setInterval(function() {
+          self.updateScroll();
+          self.updateThumbScroll();
+        }, 5000);
+      }
+      document.addEventListener('touchmove', function (e) { e.preventDefault(); }, false);
+      //self.page = 1;
     });
 
     var pagesCount = pdfDocument.numPages;
@@ -1227,6 +1272,8 @@ var PDFViewerApplication = {
     this.forceRendering();
 
     this.pdfViewer.scrollPageIntoView(pageNumber);
+    this.updateScroll();
+    this.updateThumbScroll();
   },
 
   requestPresentationMode: function pdfViewRequestPresentationMode() {
@@ -1261,9 +1308,9 @@ function validateFileURL(file) {
     // Removing of the following line will not guarantee that the viewer will
     // start accepting URLs from foreign origin -- CORS headers on the remote
     // server must be properly configured.
-    if (fileOrigin !== viewerOrigin) {
-      throw new Error('file origin does not match viewer\'s');
-    }
+    //if (fileOrigin !== viewerOrigin) {
+    //  throw new Error('file origin does not match viewer\'s');
+    //}
   } catch (e) {
     var message = e && e.message;
     var loadingErrorMessage = mozL10n.get('loading_error', null,
