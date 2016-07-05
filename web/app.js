@@ -853,12 +853,13 @@ var PDFViewerApplication = {
     }
     var myScroll = new iscrollLib.IScroll(self.appConfig.mainContainer, {
       mouseWheel: true,
-      probeType: 3,
+      probeType: 1,
       scrollX: true,
       //deceleration: 0.0001,
       preventDefaultException: { tagName:/.*/ }, // fix presentation mode bug
     });
     myScroll.on('scroll', self.pdfViewer._scrollUpdate.bind(self.pdfViewer))
+    myScroll.on('scrollEnd', self.pdfViewer._scrollUpdate.bind(self.pdfViewer))
     window.myScroll = myScroll;
   },
 
@@ -871,10 +872,11 @@ var PDFViewerApplication = {
     }
     var thumbScroll = new iscrollLib.IScroll('#sidebarContent', {
       mouseWheel: true,
-      probeType: 2,
+      probeType: 1,
       preventDefaultException: { tagName:/.*/ }, // fix presentation mode bug
     });
     thumbScroll.on('scroll', self.pdfThumbnailViewer._scrollUpdated.bind(self.pdfThumbnailViewer))
+    thumbScroll.on('scrollEnd', self.pdfThumbnailViewer._scrollUpdated.bind(self.pdfThumbnailViewer))
     window.thumbScroll = thumbScroll;
   },
 
