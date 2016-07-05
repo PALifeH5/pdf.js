@@ -312,6 +312,7 @@ var PDFPageView = (function PDFPageViewClosure() {
       if (this.renderingState !== RenderingStates.INITIAL) {
         console.error('Must be in new state before drawing');
       }
+      //console.log('draw', this.id)
 
       this.renderingState = RenderingStates.RUNNING;
 

@@ -842,6 +842,11 @@ var PDFViewerApplication = {
   updateScroll: function() {
     var self = this;
     //console.log('update scroll');
+    // fix horizontal scroll bug
+    if (self.pdfViewer && self.pdfViewer.viewer && self.pdfViewer._pages[0]) {
+      self.pdfViewer.viewer.style.width = (self.pdfViewer._pages[0].div.clientWidth + 18)+ "px"
+      self.pdfViewer.viewer.style.minWidth = document.documentElement.clientWidth+ "px"
+    }
     if (window.myScroll) {
       window.myScroll.refresh();
       return;
@@ -849,6 +854,8 @@ var PDFViewerApplication = {
     var myScroll = new iscrollLib.IScroll(self.appConfig.mainContainer, {
       mouseWheel: true,
       probeType: 3,
+      scrollX: true,
+      //deceleration: 0.0001,
       preventDefaultException: { tagName:/.*/ }, // fix presentation mode bug
     });
     myScroll.on('scroll', self.pdfViewer._scrollUpdate.bind(self.pdfViewer))
@@ -864,7 +871,7 @@ var PDFViewerApplication = {
     }
     var thumbScroll = new iscrollLib.IScroll('#sidebarContent', {
       mouseWheel: true,
-      probeType: 3,
+      probeType: 2,
       preventDefaultException: { tagName:/.*/ }, // fix presentation mode bug
     });
     thumbScroll.on('scroll', self.pdfThumbnailViewer._scrollUpdated.bind(self.pdfThumbnailViewer))
@@ -883,16 +890,19 @@ var PDFViewerApplication = {
       self.downloadComplete = true;
       self.loadingBar.hide();
 
-      self.updateScroll();
-      self.updateThumbScroll();
+      self.pdfViewer.pagesPromise.then(function(){
+        console.log('pages load')
+        self.updateScroll();
+        self.updateThumbScroll();
+      })
       // since the viewer's size and the thumbnailView's size changes for unknown reason,
       // here just refresh iscroll regularly
-      if (!window.scrollInterval) {
-        window.scrollInterval = setInterval(function() {
-          self.updateScroll();
-          self.updateThumbScroll();
-        }, 5000);
-      }
+      //if (!window.scrollInterval) {
+      //  window.scrollInterval = setTimeout(function() {
+      //    self.updateScroll();
+      //    self.updateThumbScroll();
+      //  }, 5000);
+      //}
       document.addEventListener('touchmove', function (e) { e.preventDefault(); }, false);
       //self.page = 1;
     });

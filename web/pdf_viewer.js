@@ -60,7 +60,7 @@ var PresentationModeState = {
   FULLSCREEN: 3,
 };
 
-var DEFAULT_CACHE_SIZE = 10;
+var DEFAULT_CACHE_SIZE = 100;
 
 /**
  * @typedef {Object} PDFViewerOptions
