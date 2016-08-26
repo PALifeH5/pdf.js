@@ -459,7 +459,7 @@ var PDFViewerApplication = {
       // Embedded PDF viewers should not be changing their parent page's title.
       return;
     }
-    document.title = title;
+    //document.title = title;
 //#if B2G
 //  document.getElementById('activityTitle').textContent = title;
 //#endif
@@ -1404,6 +1404,10 @@ function webViewerInitialized() {
   var queryString = document.location.search.substring(1);
   var params = PDFViewerApplication.parseQueryString(queryString);
   var file = 'file' in params ? params.file : DEFAULT_URL;
+
+  var title = 'title' in params ? params.title : '';
+  document.title = title;
+
 //#endif
 //#if (FIREFOX || MOZCENTRAL)
 //var file = window.location.href.split('#')[0];
