@@ -1406,7 +1406,9 @@ function webViewerInitialized() {
   var file = 'file' in params ? params.file : DEFAULT_URL;
 
   var title = 'title' in params ? params.title : '';
-  document.title = title;
+  if (title) {
+    document.title = title;
+  }
 
 //#endif
 //#if (FIREFOX || MOZCENTRAL)
